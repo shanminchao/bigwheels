@@ -27,7 +27,11 @@ function(_add_sample_internal)
     target_include_directories("${TARGET_NAME}" PUBLIC ${PPX_DIR}/include)
     target_compile_definitions("${TARGET_NAME}" PRIVATE ${ARG_API_DEFINES})
 
-    target_link_libraries("${TARGET_NAME}" PUBLIC ppx glfw)
+    target_link_libraries("${TARGET_NAME}" PUBLIC ppx)
+
+    if (NOT PPX_ANDROID)
+        target_link_libraries("${TARGET_NAME}" PUBLIC glfw)
+    endif()
 
     # OpenXR libs
     if (PPX_BUILD_XR)

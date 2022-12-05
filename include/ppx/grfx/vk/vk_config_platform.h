@@ -20,6 +20,10 @@
 #   if ! defined(VK_USE_PLATFORM_GGP)
 #       define VK_USE_PLATFORM_GGP
 #   endif
+#elif defined(PPX_ANDROID)
+#   if ! defined(VK_USE_PLATFORM_ANDROID_KHR)
+#       define VK_USE_PLATFORM_ANDROID_KHR
+#   endif
 #elif defined(PPX_LINUX)
 #   if defined(PPX_LINUX_XCB)
 #       if ! defined(VK_USE_PLATFORM_XCB_KHR)
