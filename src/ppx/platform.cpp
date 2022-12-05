@@ -15,7 +15,11 @@
 #include "ppx/platform.h"
 #include "ppx/string_util.h"
 
+#if defined(PPX_ANDROID)
+// TODO: Fill out ANDROID-specific header
+#else
 #include "cpuinfo_x86.h"
+#endif
 
 #if defined(PPX_MSW)
 #include <Windows.h>
@@ -28,6 +32,9 @@ static Platform sPlatform = Platform();
 // -------------------------------------------------------------------------------------------------
 // CpuInfo
 // -------------------------------------------------------------------------------------------------
+#if defined(PPX_ANDROID)
+    // TODO: Fill out ANDROID-specific info
+#else
 const char* GetX86LongMicroarchitectureName(cpu_features::X86Microarchitecture march)
 {
     // clang-format off
@@ -107,13 +114,18 @@ CpuInfo GetX86CpuInfo()
 
     return cpuInfo;
 }
+#endif
 
 // -------------------------------------------------------------------------------------------------
 // Platform
 // -------------------------------------------------------------------------------------------------
 Platform::Platform()
 {
+#if defined(PPX_ANDROID)
+    // Call ANDROID-specific function
+#else
     mCpuInfo = GetX86CpuInfo();
+#endif
 }
 
 Platform::~Platform()

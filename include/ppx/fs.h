@@ -35,9 +35,45 @@
 #include <vector>
 #include <filesystem>
 
+#if defined(PPX_ANDROID)
+#   include <game-activity/native_app_glue/android_native_app_glue.h>
+#endif
+
 namespace ppx::fs {
 
+#if defined(PPX_ANDROID)
+    void set_android_context(android_app* androidContext);
+#endif
+
+//! @class File
+//!
+//!
+class File
+{
+public:
+    bool Open(const char *path);
+    bool IsOpen() const;
+    size_t Read(void *buf, size_t count);
+    size_t GetLength() const;
+    void Close();
+private:
+#if defined(PPX_ANDROID)
+    AAsset* mFile = nullptr;
+#else
+    std::ifstream mStream;
+#endif
+};
+
+class FileStream : public std::streambuf
+{
+public:
+    bool Open(const char *path);
+private:
+    std::vector<char> mBuffer;
+};
+
 std::optional<std::vector<char>> load_file(const std::filesystem::path& path);
+bool path_exists(const std::filesystem::path& path);
 
 } // namespace ppx::fs
 

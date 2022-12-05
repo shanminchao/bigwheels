@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "ppx/ppx.h"
-
 using namespace ppx;
 
 #if defined(USE_DX11)
@@ -215,11 +214,4 @@ void ProjApp::Render()
     PPX_CHECKED_CALL(swapchain->Present(imageIndex, 1, &frame.renderCompleteSemaphore));
 }
 
-int main(int argc, char** argv)
-{
-    ProjApp app;
-
-    int res = app.Run(argc, argv);
-
-    return res;
-}
+SETUP_APPLICATION(ProjApp)

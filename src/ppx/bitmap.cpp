@@ -23,6 +23,8 @@
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include "stb_image_resize.h"
 
+#include "ppx/fs.h"
+
 namespace ppx {
 
 Bitmap::Bitmap()
@@ -521,8 +523,9 @@ static Result IsRadianceFile(const std::filesystem::path& path, bool& isRadiance
     static const char* kRadianceSig = "#?RADIANCE";
 
     // Open file
-    FILE* pFile = fopen(path.string().c_str(), "rb");
-    if (pFile == nullptr) {
+
+    ppx::fs::File file;
+    if (!file.Open(path.string().c_str())) {
         return ppx::ERROR_IMAGE_FILE_LOAD_FAILED;
     }
     // Signature buffer
@@ -530,10 +533,10 @@ static Result IsRadianceFile(const std::filesystem::path& path, bool& isRadiance
     char         buf[kBufferSize] = {0};
 
     // Read signature
-    size_t n = fread(buf, 1, kBufferSize, pFile);
+    size_t n = file.Read(buf, kBufferSize);
 
     // Close file
-    fclose(pFile);
+    file.Close();
 
     // Only check if kBufferSize bytes were read
     if (n == kBufferSize) {
@@ -547,13 +550,13 @@ static Result IsRadianceFile(const std::filesystem::path& path, bool& isRadiance
 bool Bitmap::IsBitmapFile(const std::filesystem::path& path)
 {
     int x, y, comp;
-    int res = stbi_info(path.string().c_str(), &x, &y, &comp);
+    int res = StbiInfo(path.string().c_str(), &x, &y, &comp);
     return res != 0;
 }
 
 Result Bitmap::GetFileProperties(const std::filesystem::path& path, uint32_t* pWidth, uint32_t* pHeight, Bitmap::Format* pFormat)
 {
-    if (!std::filesystem::exists(path)) {
+    if (!ppx::fs::path_exists(path)) {
         return ppx::ERROR_PATH_DOES_NOT_EXIST;
     }
 
@@ -586,7 +589,7 @@ Result Bitmap::GetFileProperties(const std::filesystem::path& path, uint32_t* pW
 
 Result Bitmap::LoadFile(const std::filesystem::path& path, Bitmap* pBitmap)
 {
-    if (!std::filesystem::exists(path)) {
+    if (!ppx::fs::path_exists(path)) {
         return ppx::ERROR_PATH_DOES_NOT_EXIST;
     }
 
@@ -594,6 +597,11 @@ Result Bitmap::LoadFile(const std::filesystem::path& path, Bitmap* pBitmap)
     Result ppxres     = IsRadianceFile(path, isRadiance);
     if (Failed(ppxres)) {
         return ppxres;
+    }
+
+    auto bitmapBytes = ppx::fs::load_file(path);
+    if (!bitmapBytes.has_value()) {
+        return ppx::ERROR_IMAGE_FILE_LOAD_FAILED;
     }
 
     // @TODO: Refactor to remove redundancies from both blocks
@@ -604,7 +612,7 @@ Result Bitmap::LoadFile(const std::filesystem::path& path, Bitmap* pBitmap)
         int channels         = 0;
         int requiredChannels = 4; // Force to 4 chanenls to make things easier for the graphics APIs
 
-        float* pData = stbi_loadf(path.string().c_str(), &width, &height, &channels, requiredChannels);
+        float* pData = stbi_loadf_from_memory((unsigned char*)bitmapBytes.value().data(), bitmapBytes.value().size(), &width, &height, &channels, requiredChannels);
         if (pData == nullptr) {
             return ppx::ERROR_IMAGE_FILE_LOAD_FAILED;
         }
@@ -629,7 +637,7 @@ Result Bitmap::LoadFile(const std::filesystem::path& path, Bitmap* pBitmap)
         int channels         = 0;
         int requiredChannels = 4; // Force to 4 chanenls to make things easier for the graphics APIs
 
-        unsigned char* pData = stbi_load(path.string().c_str(), &width, &height, &channels, requiredChannels);
+        unsigned char* pData = stbi_load_from_memory((unsigned char*)bitmapBytes.value().data(), bitmapBytes.value().size(), &width, &height, &channels, requiredChannels);
         if (IsNull(pData)) {
             return ppx::ERROR_IMAGE_FILE_LOAD_FAILED;
         }
@@ -659,6 +667,17 @@ Result Bitmap::SaveFilePNG(const std::filesystem::path& path, const Bitmap* pBit
         return ppx::ERROR_IMAGE_FILE_SAVE_FAILED;
     }
     return ppx::SUCCESS;
+}
+
+int Bitmap::StbiInfo(char const *filename, int *x, int *y, int *comp)
+{
+#if defined(PPX_ANDROID)
+    auto bitmapBytes = fs::load_file(filename);
+    if (!bitmapBytes.has_value()) return stbi__err("can't fopen", "Unable to open file");
+    return stbi_info_from_memory((unsigned char*)bitmapBytes->data(), bitmapBytes->size(), x, y, comp);
+#else
+    return stbi_info(filename, x, y, comp);
+#endif
 }
 
 } // namespace ppx

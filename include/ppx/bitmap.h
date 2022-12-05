@@ -184,6 +184,7 @@ private:
     Result InternalInitialize(uint32_t width, uint32_t height, Bitmap::Format format, char* pExternalStorage);
     Result InternalCopy(const Bitmap& obj);
 
+    static int StbiInfo(char const *filename, int *x, int *y, int *comp);
 private:
     uint32_t          mWidth           = 0;
     uint32_t          mHeight          = 0;
