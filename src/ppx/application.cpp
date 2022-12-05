@@ -396,6 +396,7 @@ struct WindowEvents
 
     static void MouseButtonCallback(GLFWwindow* window, int event_button, int event_action, int event_mods)
     {
+#if !defined(PPX_ANDROID)
         auto it = sWindows.find(window);
         if (it == sWindows.end()) {
             return;
@@ -433,10 +434,12 @@ struct WindowEvents
         if (p_application->GetSettings()->enableImGui) {
             ImGui_ImplGlfw_MouseButtonCallback(window, event_button, event_action, event_mods);
         }
+#endif
     }
 
     static void MouseMoveCallback(GLFWwindow* window, double event_x, double event_y)
     {
+#if !defined(PPX_ANDROID)
         auto it = sWindows.find(window);
         if (it == sWindows.end()) {
             return;
@@ -457,10 +460,12 @@ struct WindowEvents
             static_cast<int32_t>(event_x),
             static_cast<int32_t>(event_y),
             buttons);
+#endif
     }
 
     static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
     {
+#if !defined(PPX_ANDROID)
         auto it = sWindows.find(window);
         if (it == sWindows.end()) {
             return;
@@ -474,10 +479,12 @@ struct WindowEvents
         if (p_application->GetSettings()->enableImGui) {
             ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
         }
+#endif
     }
 
     static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
+#if !defined(PPX_ANDROID)
         auto it = sWindows.find(window);
         if (it == sWindows.end()) {
             return;
@@ -503,10 +510,12 @@ struct WindowEvents
         if (p_application->GetSettings()->enableImGui) {
             ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
         }
+#endif
     }
 
     static void CharCallback(GLFWwindow* window, unsigned int c)
     {
+#if !defined(PPX_ANDROID)
         auto it = sWindows.find(window);
         if (it == sWindows.end()) {
             return;
@@ -516,10 +525,12 @@ struct WindowEvents
         if (p_application->GetSettings()->enableImGui) {
             ImGui_ImplGlfw_CharCallback(window, c);
         }
+#endif
     }
 
     static Result RegisterWindowEvents(GLFWwindow* window, Application* application)
     {
+#if !defined(PPX_ANDROID)
         auto it = sWindows.find(window);
         if (it != sWindows.end()) {
             return ppx::ERROR_WINDOW_EVENTS_ALREADY_REGISTERED;
@@ -534,7 +545,7 @@ struct WindowEvents
         glfwSetCharCallback(window, WindowEvents::CharCallback);
 
         sWindows[window] = application;
-
+#endif
         return ppx::SUCCESS;
     }
 };
@@ -591,10 +602,16 @@ Application* Application::Get()
 
 void Application::InitializeAssetDirs()
 {
+#if defined(PPX_ANDROID)
+    // On Android, the assets folder is independently specified
+    // Assets are loaded relative to this folder
+    AddAssetDir("");
+#else
     std::filesystem::path path = GetApplicationPath();
     path.remove_filename();
     path /= RELATIVE_PATH_TO_PROJECT_ROOT;
     AddAssetDir(path / "assets");
+#endif
 }
 
 Result Application::InitializePlatform()
@@ -621,6 +638,7 @@ Result Application::InitializePlatform()
     PPX_LOG_INFO("   " << "AVX2               : " << Platform::GetCpuInfo().GetFeatures().avx2);
     // clang-format on
 
+#if !defined(PPX_ANDROID)
     if (mSettings.enableDisplay) {
         // Initializ glfw
         int res = glfwInit();
@@ -632,6 +650,7 @@ Result Application::InitializePlatform()
     else {
         PPX_LOG_INFO("Display not enabled: skipping initialization of glfw");
     }
+#endif
 
     return ppx::SUCCESS;
 }
@@ -745,6 +764,8 @@ Result Application::InitializeGrfxSurface()
 #elif defined(PPX_MSW)
         ci.hinstance = ::GetModuleHandle(nullptr);
         ci.hwnd      = glfwGetWin32Window(static_cast<GLFWwindow*>(mWindow));
+#elif defined(PPX_ANDROID)
+        ci.androidAppContext = GetAndroidContext();
 #endif
 
         Result ppxres = mInstance->CreateSurface(&ci, &mSurface);
@@ -888,14 +909,19 @@ Result Application::InitializeImGui()
 #if defined(PPX_VULKAN)
         case grfx::API_VK_1_1:
         case grfx::API_VK_1_2: {
+#if !defined(PPX_ANDROID)
+            // ImGui does not support ANDROID
             mImGui = std::unique_ptr<ImGuiImpl>(new ImGuiImplVk());
+#endif
         } break;
 #endif // defined(PPX_VULKAN)
     }
 
-    Result ppxres = mImGui->Init(this);
-    if (Failed(ppxres)) {
-        return ppxres;
+    if (mImGui) {
+        Result ppxres = mImGui->Init(this);
+        if (Failed(ppxres)) {
+            return ppxres;
+        }
     }
 
     return ppx::SUCCESS;
@@ -947,6 +973,7 @@ Result Application::CreatePlatformWindow()
         return ppx::SUCCESS;
     }
 
+#if !defined(PPX_ANDROID)
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, mSettings.window.resizable ? GLFW_TRUE : GLFW_FALSE);
 
@@ -973,17 +1000,19 @@ Result Application::CreatePlatformWindow()
     }
 
     mWindow = static_cast<void*>(pWindow);
-
+#endif
     return ppx::SUCCESS;
 }
 
 void Application::DestroyPlatformWindow()
 {
+#if !defined(PPX_ANDROID)
     if (!IsNull(mWindow)) {
         GLFWwindow* pWindow = static_cast<GLFWwindow*>(mWindow);
         glfwDestroyWindow(pWindow);
         mWindow = nullptr;
     }
+#endif
 }
 
 void Application::DispatchConfig()
@@ -1240,9 +1269,13 @@ void Application::DrawImGui(grfx::CommandBuffer* pCommandBuffer)
 bool Application::IsRunning() const
 {
     if (mSettings.enableDisplay) {
+#if !defined(PPX_ANDROID)
         int  value     = glfwWindowShouldClose(static_cast<GLFWwindow*>(mWindow));
         bool isRunning = (value == 0);
         return isRunning;
+#else
+        return true;
+#endif
     }
     else {
         return mRunningWithoutDisplay;
@@ -1356,6 +1389,7 @@ int Application::Run(int argc, char** argv)
             return EXIT_FAILURE;
         }
 
+#if !defined(PPX_ANDROID)
         if (!mSettings.xr.enable) {
             // Update the window size if the settings got changed due to surface requirements
             {
@@ -1370,6 +1404,7 @@ int Application::Run(int argc, char** argv)
                 }
             }
         }
+#endif
     }
     else {
         PPX_LOG_INFO("Display not enabled: skipping creation of platform window");
@@ -1445,10 +1480,12 @@ int Application::Run(int argc, char** argv)
         else
 #endif
         {
+#if !defined(PPX_ANDROID)
             if (mSettings.enableDisplay) {
                 // Poll events
                 glfwPollEvents();
             }
+#endif
 
             // Start new Imgui frame
             if (mImGui) {
@@ -1540,7 +1577,9 @@ int Application::Run(int argc, char** argv)
 void Application::Quit()
 {
     if (mSettings.enableDisplay) {
+#if !defined(PPX_ANDROID)
         glfwSetWindowShouldClose(static_cast<GLFWwindow*>(mWindow), 1);
+#endif
     }
     else {
         mRunningWithoutDisplay = false;
@@ -1613,12 +1652,7 @@ std::vector<char> Application::LoadShader(const std::filesystem::path& baseDir, 
     }
 
     const auto filePath = GetAssetPath(baseDir / suffix.value());
-    if (!std::filesystem::exists(filePath)) {
-        PPX_ASSERT_MSG(false, "shader file not found: " << filePath);
-        return {};
-    }
-
-    auto bytecode = fs::load_file(filePath);
+    auto       bytecode = fs::load_file(filePath);
     if (!bytecode.has_value()) {
         PPX_ASSERT_MSG(false, "could not load file: " << filePath);
         return {};

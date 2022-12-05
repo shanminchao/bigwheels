@@ -5,6 +5,7 @@ Supported platforms:
 * Windows
 * Linux
 * GGP (Google Gaming Platform, i.e. Stadia)
+* Android
 
 Supported graphics APIs:
 * DirectX 11
@@ -30,6 +31,10 @@ Supported graphics APIs:
        * 1.3.216.0 or later
      * Recent version of Windows SDK
        * 10.0.22621.0 or later
+   * Android
+     * Android Studio, 2022.1.1 Patch 2 or later
+     * Recent version of NDK
+       * 25.1.8937393 or later
  * Hardware (*not an exhaustive list*)
    * AMD
      * Vega GPUs

@@ -41,6 +41,13 @@ Open `build\BigWheels.sln` and build
 
 Built binaries are written to `build\bin`.
 
+## Android (on Windows or Linux)
+```
+git clone --recursive https://github.com/google/BigWheels
+```
+
+Use Android Studio to open `android` subfolder and build
+
 ## GGP (on Windows)
 ```
 git clone --recursive https://github.com/google/BigWheels

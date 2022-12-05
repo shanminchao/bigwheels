@@ -941,11 +941,4 @@ void ProjApp::DrawGui()
     ImGui::Columns(1);
 }
 
-int main(int argc, char** argv)
-{
-    ProjApp app;
-
-    int res = app.Run(argc, argv);
-
-    return res;
-}
+SETUP_APPLICATION(ProjApp)
