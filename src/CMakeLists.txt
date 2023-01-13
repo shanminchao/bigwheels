@@ -113,8 +113,13 @@ list(APPEND IMGUI_SOURCE_FILES
     ${IMGUI_DIR}/imgui_draw.cpp
     ${IMGUI_DIR}/imgui_tables.cpp
     ${IMGUI_DIR}/imgui_widgets.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
 )
+
+if (NOT PPX_ANDROID)
+    list(APPEND IMGUI_SOURCE_FILES
+        ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    )
+endif()
 
 list(APPEND XXHASH_FILES
     ${PPX_DIR}/third_party/xxHash/xxhash.h

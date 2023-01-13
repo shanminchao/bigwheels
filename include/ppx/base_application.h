@@ -22,6 +22,10 @@
 
 #include <filesystem>
 
+#if defined(PPX_ANDROID)
+#   include <game-activity/native_app_glue/android_native_app_glue.h>
+#endif
+
 namespace ppx {
 
 class BaseApplication
@@ -55,7 +59,22 @@ public:
     //
     std::filesystem::path GetAssetPath(const std::filesystem::path& subPath) const;
 
+#if defined(PPX_ANDROID)
+    void SetAndroidContext(android_app* androidContext)
+    {
+        mAndroidContext = androidContext;
+    }
+    android_app *GetAndroidContext() const
+    {
+        return mAndroidContext;
+    }
+#endif
+
 private:
+
+#if defined(PPX_ANDROID)
+    android_app*    mAndroidContext;
+#endif
     std::vector<std::filesystem::path> mAssetDirs;
 };
 

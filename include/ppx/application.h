@@ -32,6 +32,7 @@
 #include <GLFW/glfw3.h>
 // clang-format on
 
+
 namespace ppx {
 
 /** @enum MouseButton
@@ -256,7 +257,14 @@ struct ApplicationSettings
 
         struct
         {
-            grfx::Format colorFormat = grfx::FORMAT_B8G8R8A8_UNORM;
+            // NVIDIA only supports B8G8R8A8, ANDROID only supports R8G8B8A8, and
+            // AMD supports both. So the default has to special-case either NVIDIA
+            // or ANDROID :(
+#if defined(PPX_ANDROID)
+            grfx::Format colorFormat = grfx::FORMAT_R8G8B8A8_UNORM;
+#else
+            grfx::Format colorFormat = grfx::FORMAT_B8G8R8A8_UNORM;            
+#endif
             grfx::Format depthFormat = grfx::FORMAT_UNDEFINED;
             uint32_t     imageCount  = 2;
         } swapchain;

@@ -602,10 +602,16 @@ Application* Application::Get()
 
 void Application::InitializeAssetDirs()
 {
+#if defined(PPX_ANDROID)
+    // On Android, the assets folder is independently specified
+    // Assets are loaded relative to this folder
+    AddAssetDir("");
+#else
     std::filesystem::path path = GetApplicationPath();
     path.remove_filename();
     path /= RELATIVE_PATH_TO_PROJECT_ROOT;
     AddAssetDir(path / "assets");
+#endif
 }
 
 Result Application::InitializePlatform()
@@ -758,6 +764,8 @@ Result Application::InitializeGrfxSurface()
 #elif defined(PPX_MSW)
         ci.hinstance = ::GetModuleHandle(nullptr);
         ci.hwnd      = glfwGetWin32Window(static_cast<GLFWwindow*>(mWindow));
+#elif defined(PPX_ANDROID)
+        ci.androidAppContext = GetAndroidContext();
 #endif
 
         Result ppxres = mInstance->CreateSurface(&ci, &mSurface);
@@ -901,14 +909,19 @@ Result Application::InitializeImGui()
 #if defined(PPX_VULKAN)
         case grfx::API_VK_1_1:
         case grfx::API_VK_1_2: {
+#if !defined(PPX_ANDROID)
+            // ImGui does not support ANDROID
             mImGui = std::unique_ptr<ImGuiImpl>(new ImGuiImplVk());
+#endif
         } break;
 #endif // defined(PPX_VULKAN)
     }
 
-    Result ppxres = mImGui->Init(this);
-    if (Failed(ppxres)) {
-        return ppxres;
+    if (mImGui) {
+        Result ppxres = mImGui->Init(this);
+        if (Failed(ppxres)) {
+            return ppxres;
+        }
     }
 
     return ppx::SUCCESS;
@@ -1639,6 +1652,21 @@ std::vector<char> Application::LoadShader(const std::filesystem::path& baseDir, 
     }
 
     const auto filePath = GetAssetPath(baseDir / suffix.value());
+
+#if defined(PPX_ANDROID)
+    AAsset* file = AAssetManager_open(GetAndroidContext()->activity->assetManager,
+                                        filePath.c_str(), AASSET_MODE_BUFFER);
+    size_t fileLength = AAsset_getLength(file);
+
+    std::vector<char> bytecode(fileLength);
+
+    AAsset_read(file, bytecode.data(), fileLength);
+    AAsset_close(file);
+
+    PPX_LOG_INFO("Loaded shader from " << filePath);
+    return bytecode;
+#else
+
     if (!std::filesystem::exists(filePath)) {
         PPX_ASSERT_MSG(false, "shader file not found: " << filePath);
         return {};
@@ -1652,6 +1680,7 @@ std::vector<char> Application::LoadShader(const std::filesystem::path& baseDir, 
 
     PPX_LOG_INFO("Loaded shader from " << filePath);
     return bytecode.value();
+#endif
 }
 
 Result Application::CreateShader(const std::filesystem::path& baseDir, const std::string& baseName, grfx::ShaderModule** ppShaderModule) const

@@ -255,10 +255,12 @@ add_subdirectory(assets)
 # ------------------------------------------------------------------------------
 # Add projects.
 # ------------------------------------------------------------------------------
+message("SHAN: BEFORE PPX_BUILD_PROJECTS")
 if (PPX_BUILD_PROJECTS)
     message("Building sample projects")
     add_subdirectory(projects)
 endif()
+message("SHAN: AFTER PPX_BUILD_PROJECTS")
 
 # ------------------------------------------------------------------------------
 # Add benchmarks.

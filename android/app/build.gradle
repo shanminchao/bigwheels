@@ -36,9 +36,16 @@ android {
     }
     externalNativeBuild {
         cmake {
-            path file('../../CMakeLists.txt')
+            path file('src/main/cpp/CMakeLists.txt')
             version '3.25.0'
         }
+    }
+    sourceSets {
+    main {
+        assets {
+            srcDirs '..\\..\\assets'
+        }
+    }
     }
 }
 

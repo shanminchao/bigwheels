@@ -46,6 +46,8 @@ function(internal_add_compile_shader_target TARGET_NAME)
 
     string(TOUPPER "${ARG_SHADER_STAGE}" ARG_SHADER_STAGE)
 
+    message("****###Compilation: ${ARG_OUTPUT_FILE}, Working Dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+
     make_output_dir("${ARG_OUTPUT_FILE}")
     add_custom_command(
         OUTPUT "${ARG_OUTPUT_FILE}"
@@ -66,6 +68,7 @@ function(internal_generate_rules_for_shader TARGET_NAME)
 
     string(REPLACE ".hlsl" "" BASE_NAME "${ARG_SOURCE}")
     get_filename_component(BASE_NAME "${BASE_NAME}" NAME)
+
     file(RELATIVE_PATH PATH_PREFIX "${PPX_DIR}" "${ARG_SOURCE}")
     get_filename_component(PATH_PREFIX "${PATH_PREFIX}" DIRECTORY)
 
@@ -115,12 +118,24 @@ function(internal_generate_rules_for_shader TARGET_NAME)
     
     # Vulkan, spv, sm 6_6.
     if (PPX_VULKAN)
+        set(SHADER_OUTPUT_PATH "${CMAKE_BINARY_DIR}/${PATH_PREFIX}/spv/${BASE_NAME}.${ARG_SHADER_STAGE}.spv")
+        if (PPX_ANDROID)
+            # Android has a designated asset folder, which is set to the root asset folder
+            # The compiled SPVs must be placed there. There might be a way to set a secondary asset folder, but so far
+            # attempts at doing that have failed
+            set(SHADER_OUTPUT_PATH "spv/${BASE_NAME}.${ARG_SHADER_STAGE}.spv")
+        endif()
+
+        message("****###SHADER_OUTPUT_PATH: ${SHADER_OUTPUT_PATH}")
+        message("****###TARGET FOLDER ${TARGET_NAME}")
+
         internal_add_compile_shader_target(
             "vk_${TARGET_NAME}_${ARG_SHADER_STAGE}"
             COMPILER_PATH "${DXC_PATH}"
             SOURCE "${ARG_SOURCE}"
             INCLUDES ${ARG_INCLUDES}
-            OUTPUT_FILE "${CMAKE_BINARY_DIR}/${PATH_PREFIX}/spv/${BASE_NAME}.${ARG_SHADER_STAGE}.spv"
+            #OUTPUT_FILE "${CMAKE_BINARY_DIR}/${PATH_PREFIX}/spv/${BASE_NAME}.${ARG_SHADER_STAGE}.spv"
+            OUTPUT_FILE "${SHADER_OUTPUT_PATH}"
             SHADER_STAGE "${ARG_SHADER_STAGE}"
             OUTPUT_FORMAT "SPV_6_6"
             TARGET_FOLDER "${TARGET_NAME}"

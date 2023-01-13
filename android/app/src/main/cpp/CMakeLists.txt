@@ -14,6 +14,10 @@ project("bigwheels")
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 
+message("SHAN: BEFORE add_subdirectory")
+add_subdirectory("../../../../.." "../../../../../app/build")
+
+
 add_library( # Sets the name of the library.
         bigwheels
 
@@ -28,6 +32,8 @@ add_library( # Sets the name of the library.
         Shader.cpp
         TextureAsset.cpp
         Utility.cpp)
+
+target_link_libraries(bigwheels vk_01_triangle)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

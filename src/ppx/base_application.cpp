@@ -72,9 +72,11 @@ void BaseApplication::AddAssetDir(const std::filesystem::path& path, bool insert
         return;
     }
 
+#if !defined(PPX_ANDROID)
     if (!std::filesystem::is_directory(path)) {
         return;
     }
+#endif
 
     mAssetDirs.push_back(path);
 
@@ -92,10 +94,20 @@ std::filesystem::path BaseApplication::GetAssetPath(const std::filesystem::path&
     std::filesystem::path assetPath;
     for (auto& assetDir : mAssetDirs) {
         std::filesystem::path path = assetDir / subPath;
+#if defined(PPX_ANDROID)
+        AAsset* file = AAssetManager_open(GetAndroidContext()->activity->assetManager,
+                                          path.c_str(), AASSET_MODE_BUFFER);
+        if (file != nullptr) {
+            assetPath = path;
+            AAsset_close(file);
+            break;
+        }
+#else
         if (std::filesystem::exists(path)) {
             assetPath = path;
             break;
         }
+#endif
     }
     return assetPath;
 }

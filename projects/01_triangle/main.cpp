@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "ppx/ppx.h"
-
 using namespace ppx;
 
 #if defined(USE_DX11)
@@ -215,6 +214,37 @@ void ProjApp::Render()
     PPX_CHECKED_CALL(swapchain->Present(imageIndex, 1, &frame.renderCompleteSemaphore));
 }
 
+#if defined(PPX_ANDROID)
+ProjApp app;
+bool InitVulkan(android_app* androidContext)
+{
+    // androidAppCtx = app;
+    // vulkan_app.initVulkan();
+    app.SetAndroidContext(androidContext);
+    return true;
+}
+
+void DeleteVulkan(void)
+{
+//    vulkan_app.cleanup();
+}
+
+bool IsVulkanReady(void)
+{
+    return app.GetAndroidContext() != nullptr;
+    //return app.GetInstance();
+}
+
+bool VulkanDrawFrame(void)
+{
+    // vulkan_app.drawFrame();
+    // vkDeviceWaitIdle(vulkan_app.device);
+    // return true;
+    int res = app.Run(0, nullptr);
+    return res;
+
+}
+#else
 int main(int argc, char** argv)
 {
     ProjApp app;
@@ -223,3 +253,4 @@ int main(int argc, char** argv)
 
     return res;
 }
+#endif
