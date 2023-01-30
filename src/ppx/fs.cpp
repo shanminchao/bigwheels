@@ -19,7 +19,19 @@
 #include <vector>
 #include <optional>
 
+#if defined(PPX_ANDROID)
+#   include <game-activity/native_app_glue/android_native_app_glue.h>
+android_app* gAndroidContext;
+#endif
+
 namespace ppx::fs {
+
+#if defined(PPX_ANDROID)
+void set_android_context(android_app* androidContext)
+{
+    gAndroidContext = androidContext;
+}
+#endif
 
 std::optional<std::vector<char>> load_file(const std::filesystem::path& path)
 {

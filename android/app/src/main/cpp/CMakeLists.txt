@@ -33,7 +33,8 @@ add_library( # Sets the name of the library.
         TextureAsset.cpp
         Utility.cpp)
 
-target_link_libraries(bigwheels vk_01_triangle)
+#target_link_libraries(bigwheels vk_01_triangle)
+target_link_libraries(bigwheels vk_03_square_textured)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

@@ -14,6 +14,11 @@
 
 #include "ppx/bitmap.h"
 
+#if defined(PPX_ANDROID)
+// Android has its own file loading mechanisms
+#define STBI_NO_STDIO
+#endif
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -547,6 +552,18 @@ static Result IsRadianceFile(const std::filesystem::path& path, bool& isRadiance
 bool Bitmap::IsBitmapFile(const std::filesystem::path& path)
 {
     int x, y, comp;
+
+    /*
+    FILE *f = stbi__fopen(filename, "rb");
+    int result;
+    if (!f) return stbi__err("can't fopen", "Unable to open file");
+    result = stbi_info_from_file(f, x, y, comp);
+    fclose(f);
+    return result;
+    */
+
+
+
     int res = stbi_info(path.string().c_str(), &x, &y, &comp);
     return res != 0;
 }

@@ -63,6 +63,7 @@ public:
     void SetAndroidContext(android_app* androidContext)
     {
         mAndroidContext = androidContext;
+        fs::set_android_context(androidContext);
     }
     android_app *GetAndroidContext() const
     {
