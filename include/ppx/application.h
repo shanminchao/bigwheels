@@ -21,6 +21,7 @@
 #include "ppx/imgui_impl.h"
 #include "ppx/timer.h"
 #include "ppx/xr_component.h"
+#include "ppx/fs.h"
 
 #include <deque>
 #include <filesystem>

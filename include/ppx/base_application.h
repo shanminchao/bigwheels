@@ -19,6 +19,7 @@
 #include "ppx/platform.h"
 #include "ppx/grfx/grfx_device.h"
 #include "ppx/grfx/grfx_instance.h"
+#include "ppx/fs.h"
 
 #include <filesystem>
 

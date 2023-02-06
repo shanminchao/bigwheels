@@ -33,31 +33,86 @@ void set_android_context(android_app* androidContext)
 }
 #endif
 
+bool File::Exists(const char *path)
+{
+#if defined(PPX_ANDROID)
+    AAsset* temp = AAssetManager_open(gAndroidContext->activity->assetManager,
+                                      path, AASSET_MODE_BUFFER);
+    if (temp != nullptr) {
+        AAsset_close(temp);
+        return true;
+    }
+    return false;
+#else
+    return std::filesystem::exists(path);
+#endif
+}
+
+bool File::Open(const char *path)
+{
+#if defined(PPX_ANDROID)
+    mFile = AAssetManager_open(gAndroidContext->activity->assetManager,
+                               path, AASSET_MODE_BUFFER);
+    return mFile != nullptr;
+#else
+    mStream.open(path, std::ios::binary);
+#endif
+}
+
+bool File::IsOpen() const
+{
+#if defined(PPX_ANDROID)
+    return mFile != nullptr;
+#else
+    return mStream.is_open();
+#endif
+}
+
+size_t File::Read(void *buf, size_t count)
+{
+#if defined(PPX_ANDROID)
+    return AAsset_read(mFile, buf, count);
+#else
+    mStream.read(reinterpret_cast<char*>(buf), count);
+    return mStream.gcount();
+#endif
+}
+
+size_t File::GetLength() const
+{
+#if defined(PPX_ANDROID)
+    return AAsset_getLength(mFile);
+#else
+    int pos = mStream.tellg();
+    mStream.seekg(0, std::ios::end);
+    size_t size = mStream.tellg();
+    mStream.seekg(pos, std::ios::beg);
+    return size;
+#endif
+}
+
+void File::Close()
+{
+#if defined(PPX_ANDROID)
+    AAsset_close(mFile);
+#else
+    mStream.close();
+#endif
+}
+
 std::optional<std::vector<char>> load_file(const std::filesystem::path& path)
 {
-    if (!std::filesystem::exists(path) || !std::filesystem::is_regular_file(path)) {
-        return std::nullopt;
-    }
-
-    std::ifstream stream(path, std::ios::binary);
-    if (!stream.is_open()) {
-        return std::nullopt;
-    }
-
     std::vector<char> data;
-    do {
-        stream.seekg(0, std::ios::end);
-        size_t size = stream.tellg();
-        if (size == 0) {
-            break;
-        }
 
-        data.resize(size);
-        stream.seekg(0, std::ios::beg);
-        stream.read(reinterpret_cast<char*>(data.data()), data.size());
-    } while (false);
-    stream.close();
+    ppx::fs::File file;
+    if (!file.Open(path.c_str())) {
+        return std::nullopt;
+    }
 
+    size_t size = file.GetLength();
+    data.resize(size);
+    file.Read(data.data(), size);
+    file.Close();
     return data;
 }
 

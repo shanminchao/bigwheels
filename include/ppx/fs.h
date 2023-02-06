@@ -45,6 +45,27 @@ namespace ppx::fs {
     void set_android_context(android_app* androidContext);
 #endif
 
+//! @class File
+//!
+//!
+class File
+{
+public:
+    static bool Exists(const char *path);
+
+    bool Open(const char *path);
+    bool IsOpen() const;
+    size_t Read(void *buf, size_t count);
+    size_t GetLength() const;
+    void Close();
+private:
+#if defined(PPX_ANDROID)
+    AAsset* mFile = nullptr;
+#else
+    std::ifstream mStream;
+#endif
+};
+
 std::optional<std::vector<char>> load_file(const std::filesystem::path& path);
 
 } // namespace ppx::fs
