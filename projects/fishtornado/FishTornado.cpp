@@ -159,10 +159,27 @@ void FishTornadoApp::SetupSetLayouts()
 {
     // Scene
     grfx::DescriptorSetLayoutCreateInfo createInfo = {};
-    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_SCENE_DATA_REGISTER, grfx::DESCRIPTOR_TYPE_UNIFORM_BUFFER});
-    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_SHADOW_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE});
-    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_SHADOW_SAMPLER_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLER});
+    // createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_SCENE_DATA_REGISTER, grfx::DESCRIPTOR_TYPE_UNIFORM_BUFFER});
+    // createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_SHADOW_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE});
+    // createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_SHADOW_SAMPLER_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLER});
+    // PPX_CHECKED_CALL(GetDevice()->CreateDescriptorSetLayout(&createInfo, &mSceneDataSetLayout));
+
+
+
+
+    createInfo = {};
+    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_FLOCKING_DATA_REGISTER, grfx::DESCRIPTOR_TYPE_UNIFORM_BUFFER});            // b0
+    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_PREVIOUS_POSITION_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE}); // t1
+    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_PREVIOUS_VELOCITY_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE}); // t2
+    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_OUTPUT_VELOCITY_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_STORAGE_IMAGE});   // u3
     PPX_CHECKED_CALL(GetDevice()->CreateDescriptorSetLayout(&createInfo, &mSceneDataSetLayout));
+
+    PerFrame& frame          = mPerFrame[0];
+    PPX_CHECKED_CALL(GetDevice()->AllocateDescriptorSet(GetDescriptorPool(), mSceneDataSetLayout, &frame.sceneSet));
+
+
+
+
 
     // Model
     createInfo = {};

@@ -94,15 +94,10 @@ void Flocking::SetupSetLayouts()
     FishTornadoApp* pApp   = FishTornadoApp::GetThisApp();
     grfx::DevicePtr device = pApp->GetDevice();
 
-    // See FlockingPosition.hlsl
-    //
+    PerFrame& frame          = mPerFrame[0];
+    grfx::DescriptorPoolPtr      pool           = pApp->GetDescriptorPool();
     grfx::DescriptorSetLayoutCreateInfo createInfo = {};
-    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_FLOCKING_DATA_REGISTER, grfx::DESCRIPTOR_TYPE_UNIFORM_BUFFER});            // b0
-    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_PREVIOUS_POSITION_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE}); // t1
-    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_CURRENT_VELOCITY_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE});  // t2
-    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_OUTPUT_POSITION_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_STORAGE_IMAGE});   // u3
-    PPX_CHECKED_CALL(device->CreateDescriptorSetLayout(&createInfo, &mFlockingPositionSetLayout));
-
+ 
     // See FlockingVelocity.hlsl
     //
     createInfo = {};
@@ -110,7 +105,8 @@ void Flocking::SetupSetLayouts()
     createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_PREVIOUS_POSITION_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE}); // t1
     createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_PREVIOUS_VELOCITY_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE}); // t2
     createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_OUTPUT_VELOCITY_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_STORAGE_IMAGE});   // u3
-    PPX_CHECKED_CALL(device->CreateDescriptorSetLayout(&createInfo, &mFlockingVelocitySetLayout));
+    PPX_CHECKED_CALL(device->CreateDescriptorSetLayout(&createInfo, &mFlockingPositionSetLayout));
+    PPX_CHECKED_CALL(device->AllocateDescriptorSet(pool, mFlockingPositionSetLayout, &frame.positionSet));
 
     // See FlockingRender.hlsl
     createInfo = {};
@@ -119,6 +115,18 @@ void Flocking::SetupSetLayouts()
     createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_CURRENT_POSITION_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE});  // t2
     createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_CURRENT_VELOCITY_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE});  // t3
     PPX_CHECKED_CALL(device->CreateDescriptorSetLayout(&createInfo, &mRenderSetLayout));
+    PPX_CHECKED_CALL(device->AllocateDescriptorSet(pool, mRenderSetLayout, &frame.positionSet));
+
+
+    // See FlockingPosition.hlsl
+    //
+    createInfo = {};
+    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_FLOCKING_DATA_REGISTER, grfx::DESCRIPTOR_TYPE_UNIFORM_BUFFER});            // b0
+    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_PREVIOUS_POSITION_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE}); // t1
+    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_CURRENT_VELOCITY_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_SAMPLED_IMAGE});  // t2
+    createInfo.bindings.push_back(grfx::DescriptorBinding{RENDER_OUTPUT_POSITION_TEXTURE_REGISTER, grfx::DESCRIPTOR_TYPE_STORAGE_IMAGE});   // u3
+    PPX_CHECKED_CALL(device->CreateDescriptorSetLayout(&createInfo, &mFlockingPositionSetLayout));
+    PPX_CHECKED_CALL(device->AllocateDescriptorSet(pool, mFlockingPositionSetLayout, &frame.positionSet));
 }
 
 void Flocking::SetupSets()

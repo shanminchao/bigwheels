@@ -18,6 +18,7 @@
 #include "ppx/grfx/vk/vk_image.h"
 
 #include "ppx/grfx/vk/vk_profiler_fn_wrapper.h"
+#include <android/log.h>
 
 namespace ppx {
 namespace grfx {
@@ -92,6 +93,13 @@ void DescriptorPool::DestroyApiObjects()
     }
 }
 
+#           define LOGV(...) __android_log_vprint(ANDROID_LOG_VERBOSE, LOG_TAG,__VA_ARGS__)
+#           define LOGD(...) __android_log_vprint(ANDROID_LOG_DEBUG  , LOG_TAG,__VA_ARGS__)
+#           define LOGI(...) __android_log_vprint(ANDROID_LOG_INFO   , LOG_TAG,__VA_ARGS__)
+#           define LOGW(...) __android_log_vprint(ANDROID_LOG_WARN   , LOG_TAG,__VA_ARGS__)
+#           define LOGE(...) __android_log_vprint(ANDROID_LOG_ERROR  , LOG_TAG,__VA_ARGS__)
+#           define LOGSIMPLE(...)
+
 // -------------------------------------------------------------------------------------------------
 // DescriptorSet
 // -------------------------------------------------------------------------------------------------
@@ -105,6 +113,7 @@ Result DescriptorSet::CreateApiObjects(const grfx::internal::DescriptorSetCreate
     vkai.descriptorPool              = mDescriptorPool;
     vkai.descriptorSetCount          = 1;
     vkai.pSetLayouts                 = &layout;
+    __android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "SHAN allocate with pool: %lx", mDescriptorPool.Get());
 
     VkResult vkres = vk::AllocateDescriptorSets(
         ToApi(GetDevice())->GetVkDevice(),
