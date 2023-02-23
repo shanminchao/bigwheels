@@ -14,9 +14,41 @@
 
 #include "FishTornado.h"
 
+#if defined(PPX_ANDROID)
+FishTornadoApp app;
+bool InitVulkan(android_app* androidContext)
+{
+    // androidAppCtx = app;
+    // vulkan_app.initVulkan();
+    app.SetAndroidContext(androidContext);
+    return true;
+}
+
+void DeleteVulkan(void)
+{
+//    vulkan_app.cleanup();
+}
+
+bool IsVulkanReady(void)
+{
+    return app.GetAndroidContext() != nullptr;
+    //return app.GetInstance();
+}
+
+bool VulkanDrawFrame(void)
+{
+    // vulkan_app.drawFrame();
+    // vkDeviceWaitIdle(vulkan_app.device);
+    // return true;
+    int res = app.Run(0, nullptr);
+    return res;
+
+}
+#else
 int main(int argc, char** argv)
 {
     FishTornadoApp app;
     int            res = app.Run(argc, argv);
     return res;
 }
+#endif

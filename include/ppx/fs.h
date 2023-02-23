@@ -66,6 +66,14 @@ private:
 #endif
 };
 
+class FileStream : public std::streambuf
+{
+public:
+    bool Open(const char *path);
+private:
+    std::vector<char> mBuffer;
+};
+
 std::optional<std::vector<char>> load_file(const std::filesystem::path& path);
 
 } // namespace ppx::fs

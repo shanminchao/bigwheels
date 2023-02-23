@@ -100,6 +100,17 @@ void File::Close()
 #endif
 }
 
+
+bool FileStream::Open(const char *path)
+{
+    auto optional_buffer = load_file(path);
+    if (!optional_buffer.has_value())
+        return false;
+    mBuffer = optional_buffer.value();
+    setg(mBuffer.data(), mBuffer.data(), mBuffer.data() + mBuffer.size());
+    return true;
+}
+
 std::optional<std::vector<char>> load_file(const std::filesystem::path& path)
 {
     std::vector<char> data;
