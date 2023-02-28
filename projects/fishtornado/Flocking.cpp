@@ -334,7 +334,13 @@ void Flocking::Update(uint32_t frameIndex)
 
         hlsl::FlockingData* pFlockingData = static_cast<hlsl::FlockingData*>(frame.flockingConstants.GetMappedAddress());
         pFlockingData->resX               = static_cast<int>(mResX);
-        pFlockingData->resY               = static_cast<int>(mResY);
+
+        // For some reason, reading the velocity texture in the vertex shader at the full 128x128 causes a GPU crash on Pixel 6 Pro.
+        // Also note that when the Pixel Shader is modified to be a solid-color shader, the crash goes away. This even
+        // happens when the FlockingVelocity compute job is disabled and the velocity values are hardcoded to a
+        // unit vector. Can't make sense of it right now, and it's possible it has to do with SPIR-V code generation,
+        // since DXC isn't guaranteed to work with mobile.
+        pFlockingData->resY               = 100; //static_cast<int>(mResY);
         pFlockingData->minThresh          = mMinThresh;
         pFlockingData->maxThresh          = mMaxThresh;
         pFlockingData->minSpeed           = mMinSpeed;
