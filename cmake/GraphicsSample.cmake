@@ -49,6 +49,8 @@ function(_add_sample_internal)
         endif ()
     endif()
 
+    # SHAN: I THINK SOMEWHERE NEARBYcvi IS WEHRE THE FOLDER IS CREATED
+    # Why hlsl shaders copied to C:\src\bigwheels\android\app\build\intermediates\assets\debug\fishtornado\shaders
     add_dependencies("${TARGET_NAME}" ppx_assets)
     if (DEFINED ARG_DEPENDENCIES)
         add_dependencies("${TARGET_NAME}" ${ARG_DEPENDENCIES})

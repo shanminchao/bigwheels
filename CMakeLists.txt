@@ -202,6 +202,9 @@ add_compile_definitions(RELATIVE_PATH_TO_PROJECT_ROOT="${BUILD_TO_EXECUTABLE_PAT
 
 add_custom_target(ppx_assets)
 
+message("***SHAN: CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+message("***SHAN: PPX_ASSET_SOURCE_DIR: ${PPX_ASSET_SOURCE_DIR}")
+
 # When using a custom output directory, make sure to copy over the assets.
 if(NOT (CMAKE_BINARY_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR))
     add_custom_target(ppx_copy_assets

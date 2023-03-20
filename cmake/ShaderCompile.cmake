@@ -32,6 +32,7 @@ endfunction()
 add_custom_target("all-shaders")
 
 function(make_output_dir OUTPUT_FILE)
+    message("****make_output_dir ${OUTPUT_FILE}")
     get_filename_component(PARENT_DIR ${OUTPUT_FILE} DIRECTORY)
     if (NOT EXISTS "${PARENT_DIR}")
         file(MAKE_DIRECTORY "${PARENT_DIR}")
@@ -116,6 +117,7 @@ function(internal_generate_rules_for_shader TARGET_NAME)
     # Vulkan, spv, sm 6_6.
     if (PPX_VULKAN)
         set(SHADER_OUTPUT_PATH "${CMAKE_BINARY_DIR}/${PATH_PREFIX}/spv/${BASE_NAME}.${ARG_SHADER_STAGE}.spv")
+        message("***SHAN OUTPUT PATH: ${SHADER_OUTPUT_PATH}")
         if (PPX_ANDROID)
             # Android has a designated asset folder, which is set to the root asset folder
             # The compiled SPVs must be placed there. There might be a way to set a secondary asset folder, but so far
@@ -138,33 +140,7 @@ function(internal_generate_rules_for_shader TARGET_NAME)
 endfunction()
 
 function(generate_rules_for_shader TARGET_NAME)
-    set(oneValueArgs SOURCE)
-    set(multiValueArgs INCLUDES STAGES)
-    cmake_parse_arguments(PARSE_ARGV 1 "ARG" "" "${oneValueArgs}" "${multiValueArgs}")
 
-    add_custom_target_in_folder("${TARGET_NAME}" SOURCES "${ARG_SOURCE}" ${ARG_INCLUDES} FOLDER "${TARGET_NAME}")
-    message(STATUS "creating shader target ${TARGET_NAME}.")
-    add_dependencies("all-shaders" "${TARGET_NAME}")
-
-    if (PPX_D3D11)
-        add_custom_target_in_folder("d3d11_${TARGET_NAME}" SOURCES "${ARG_SOURCE}" ${ARG_INCLUDES} FOLDER "${TARGET_NAME}")
-        add_dependencies("${TARGET_NAME}" "d3d11_${TARGET_NAME}")
-    endif ()
-    if (PPX_D3D12)
-        add_custom_target_in_folder("d3d12_${TARGET_NAME}" SOURCES "${ARG_SOURCE}" ${ARG_INCLUDES} FOLDER "${TARGET_NAME}")
-        add_dependencies("${TARGET_NAME}" "d3d12_${TARGET_NAME}")
-
-        add_custom_target_in_folder("dxil_${TARGET_NAME}" SOURCES "${ARG_SOURCE}" ${ARG_INCLUDES} FOLDER "${TARGET_NAME}")
-        add_dependencies("${TARGET_NAME}" "dxil_${TARGET_NAME}")
-    endif ()
-    if (PPX_VULKAN)
-        add_custom_target_in_folder("vk_${TARGET_NAME}" SOURCES "${ARG_SOURCE}" ${ARG_INCLUDES} FOLDER "${TARGET_NAME}")
-        add_dependencies("${TARGET_NAME}" "vk_${TARGET_NAME}")
-    endif ()
-
-    foreach (STAGE ${ARG_STAGES})
-        internal_generate_rules_for_shader("${TARGET_NAME}" SOURCE "${ARG_SOURCE}" INCLUDES ${ARG_INCLUDES} SHADER_STAGE "${STAGE}")
-    endforeach ()
 endfunction()
 
 function(generate_group_rule_for_shader TARGET_NAME)
